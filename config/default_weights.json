@@ -1,0 +1,6 @@
+{
+  "weights": {
+    "automation_marker": 0.4,
+    "templated_pr_style": 0.6
+  }
+}

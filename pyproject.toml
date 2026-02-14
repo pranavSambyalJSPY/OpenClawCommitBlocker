@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commit-blocker"
+version = "0.1.0"
+description = "Detect likely agent-generated PRs from commit and PR residue signals"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "OpenClaw" }]
+dependencies = []
+
+[project.scripts]
+commit-blocker = "commit_blocker.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
