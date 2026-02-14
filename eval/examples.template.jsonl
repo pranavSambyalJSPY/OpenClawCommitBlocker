@@ -1,0 +1,2 @@
+{"id":"ex-1","subject_type":"pr","repo_path":"/path/to/repo-a","repo_type":"application","agent_generated":true,"max_commits":60}
+{"id":"ex-2","subject_type":"commit","repo_path":"/path/to/repo-b","repo_type":"library","agent_generated":false,"max_commits":80}
