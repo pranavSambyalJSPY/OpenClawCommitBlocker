@@ -30,6 +30,7 @@ def to_json(
     band: str,
     signals: list[Signal],
     weights: dict[str, float],
+    analysis: dict[str, object] | None = None,
 ) -> str:
     payload = {
         "repo_path": repo_path,
@@ -38,6 +39,8 @@ def to_json(
         "risk_band": band,
         "signals": _contributions(signals, weights),
     }
+    if analysis:
+        payload["analysis"] = analysis
     return json.dumps(payload, indent=2)
 
 
@@ -47,11 +50,19 @@ def to_table(
     band: str,
     signals: list[Signal],
     weights: dict[str, float],
+    analysis: dict[str, object] | None = None,
 ) -> str:
     header = (
         f"Commit Blocker scan: {repo_path}\n"
         f"Likely agent-generated score: {final_score:.3f} ({final_score*100:.1f}/100, {band})\n"
     )
+    if analysis:
+        header += (
+            f"Model blend: heuristic={analysis.get('heuristic_score', 0.0):.3f}, "
+            f"model={analysis.get('model_score', 0.0):.3f}, "
+            f"final={analysis.get('final_score', final_score):.3f}, "
+            f"model_available={analysis.get('model_available', False)}\n"
+        )
     cols = "| Signal | Score | Weight | Contribution | Evidence |\n|---|---:|---:|---:|---|"
     rows = "\n".join(
         f"| {r['name']} | {r['signal_score']:.3f} | {r['weight']:.3f} | {r['contribution']:.3f} | {shorten(str(r['evidence']), width=58, placeholder='…')} |"

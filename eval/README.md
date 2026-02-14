@@ -18,7 +18,7 @@ Use `eval/examples.template.jsonl` as a schema template.
 ## 2) Run evaluation
 
 ```bash
-commit-blocker eval eval/examples.jsonl --config eval/config.json --output eval/report.json
+commit-blocker eval eval/examples.jsonl --config eval/config.json --output eval/report.json --use-model --model-id LiquidAI/LFM2.5-1.2B-Instruct --model-weight 0.3
 ```
 
 The command runs the detector for every example, then computes:
@@ -31,6 +31,8 @@ The command runs the detector for every example, then computes:
 - threshold sweep report (metrics and confusion matrix for each threshold)
 
 The report is written to `eval/report.json`.
+Model-assisted evaluation blends heuristic score with the LiquidAI model output using `model_weight` (default 0.3).
+
 
 ## 3) Regression check
 

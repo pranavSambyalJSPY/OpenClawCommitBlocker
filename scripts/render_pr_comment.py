@@ -55,6 +55,7 @@ def _build_comment(scan: dict, pr_number: int, feedback_status: str) -> str:
     score_100 = float(scan.get("score_100", round(score * 100, 1)))
     band = str(scan.get("risk_band", _label(score)))
     top = sorted(scan.get("signals", []), key=lambda item: float(item.get("contribution", 0.0)), reverse=True)[:3]
+    analysis = scan.get("analysis", {})
 
     top_lines = "\n".join(
         f"- `{item.get('name')}` contribution={item.get('contribution')} evidence={item.get('evidence')}"
@@ -67,7 +68,9 @@ def _build_comment(scan: dict, pr_number: int, feedback_status: str) -> str:
         f"PR #{pr_number} appears **{band}** likelihood for agent-generated residue.\n\n"
         f"- Score: **{score:.3f}** ({score_100:.1f}/100)\n"
         f"- Risk band: **{band}**\n"
-        f"- Decision threshold reference: medium≈0.5 (configurable in `eval/config.json`)\n\n"
+        f"- Decision threshold reference: medium≈0.5 (configurable in `eval/config.json`)\n"
+        f"- Model used: **{analysis.get('model_id', 'heuristics-only')}** (available={analysis.get('model_available', False)})\n"
+        f"- Blend: heuristic={analysis.get('heuristic_score', score):.3f}, model={analysis.get('model_score', 0.0):.3f}, weight={analysis.get('model_weight', 0.0)}\n\n"
         f"### Top contributing signals\n{top_lines}\n\n"
         f"### Current adjudication state\n{feedback_status}\n\n"
         "### Feedback loop\n"

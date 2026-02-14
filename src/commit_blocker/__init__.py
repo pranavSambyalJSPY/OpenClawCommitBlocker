@@ -1,3 +1,3 @@
 """commit_blocker package."""
 
-__all__ = ["signals", "scorer", "report", "eval"]
+__all__ = ["signals", "scorer", "report", "eval", "model"]

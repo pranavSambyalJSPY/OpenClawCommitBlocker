@@ -7,6 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from .model import analyze_with_model
 from .scorer import load_weights, score
 from .signals import extract_signals
 
@@ -44,11 +45,7 @@ def load_examples(examples_path: str | Path) -> list[LabeledExample]:
     return examples
 
 
-def _classification_counts(
-    labels: list[bool],
-    scores: list[float],
-    threshold: float,
-) -> dict[str, int]:
+def _classification_counts(labels: list[bool], scores: list[float], threshold: float) -> dict[str, int]:
     tp = fp = tn = fn = 0
     for label, value in zip(labels, scores):
         predicted = value >= threshold
@@ -81,11 +78,7 @@ def _metrics_from_counts(counts: dict[str, int]) -> dict[str, float]:
     }
 
 
-def _fpr_by_repo_type(
-    examples: list[LabeledExample],
-    scores: list[float],
-    threshold: float,
-) -> dict[str, float]:
+def _fpr_by_repo_type(examples: list[LabeledExample], scores: list[float], threshold: float) -> dict[str, float]:
     negatives_by_type: dict[str, int] = defaultdict(int)
     fp_by_type: dict[str, int] = defaultdict(int)
 
@@ -107,9 +100,13 @@ def evaluate(
     threshold: float,
     thresholds: list[float],
     weights_file: str | Path | None,
+    use_model: bool = False,
+    model_id: str = "LiquidAI/LFM2.5-1.2B-Instruct",
+    model_weight: float = 0.3,
 ) -> dict[str, object]:
     """Run detector for each example and produce evaluation reports."""
 
+    model_weight = max(0.0, min(1.0, model_weight))
     weights = load_weights(weights_file) if weights_file else load_weights(None)
     labels = [item.agent_generated for item in examples]
     sample_scores: list[float] = []
@@ -117,8 +114,21 @@ def evaluate(
 
     for item in examples:
         signals = extract_signals(item.repo_path, max_commits=item.max_commits)
-        value = score(signals, weights)
-        sample_scores.append(value)
+        heuristic_score = score(signals, weights)
+        model_score = 0.0
+        model_available = False
+        model_evidence = "disabled"
+
+        final_score = heuristic_score
+        if use_model:
+            model = analyze_with_model(item.repo_path, max_commits=item.max_commits, model_id=model_id)
+            model_available = model.available
+            model_score = model.score
+            model_evidence = model.evidence
+            if model_available:
+                final_score = (1.0 - model_weight) * heuristic_score + model_weight * model_score
+
+        sample_scores.append(final_score)
         sample_results.append(
             {
                 "id": item.example_id,
@@ -126,8 +136,12 @@ def evaluate(
                 "repo_path": item.repo_path,
                 "repo_type": item.repo_type,
                 "agent_generated": item.agent_generated,
-                "score": value,
-                "predicted_agent_generated": value >= threshold,
+                "score": final_score,
+                "heuristic_score": heuristic_score,
+                "model_score": model_score,
+                "model_available": model_available,
+                "model_evidence": model_evidence,
+                "predicted_agent_generated": final_score >= threshold,
             }
         )
 
@@ -150,6 +164,9 @@ def evaluate(
     return {
         "example_count": len(examples),
         "threshold": threshold,
+        "use_model": use_model,
+        "model_id": model_id,
+        "model_weight": model_weight,
         "confusion_matrix": counts,
         "metrics": metrics,
         "false_positive_rate_by_repo_type": _fpr_by_repo_type(examples, sample_scores, threshold),
@@ -198,4 +215,3 @@ def regression_status(config: dict[str, object], precision: float) -> dict[str, 
         "min_allowed_precision": min_allowed_precision,
         "observed_precision": precision,
     }
-

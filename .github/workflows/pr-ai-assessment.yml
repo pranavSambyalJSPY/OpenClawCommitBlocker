@@ -27,10 +27,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install package
-        run: pip install -e .
+        run: pip install -e .[llm]
 
       - name: Run detector
-        run: commit-blocker scan . --format json > pr_scan.json
+        run: commit-blocker scan . --format json --use-model --model-id LiquidAI/LFM2.5-1.2B-Instruct --model-weight 0.3 > pr_scan.json
 
       - name: Post / update PR assessment comment
         env:
