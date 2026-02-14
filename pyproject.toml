@@ -19,3 +19,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.optional-dependencies]
+llm = ["transformers>=4.40", "torch>=2.1"]

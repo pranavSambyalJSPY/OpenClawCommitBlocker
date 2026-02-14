@@ -1,0 +1,23 @@
+name: PR AI feedback
+
+on:
+  reaction:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  feedback:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request != null
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Process reaction feedback
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/process_reaction_feedback.py
