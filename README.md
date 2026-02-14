@@ -68,6 +68,18 @@ commit-blocker eval eval/examples.jsonl --config eval/config.json --output eval/
 
 The eval workflow computes precision/recall/F1, confusion matrix, threshold sweep, and false-positive rate by repo type. It also enforces a precision regression budget and a launch gate target (`precision >= 0.9` at medium threshold). See `eval/README.md` for details.
 
+## PR integration (auto-comment + feedback)
+
+Two GitHub Actions workflows are included:
+
+- `.github/workflows/pr-ai-assessment.yml`: runs on PRs targeting `main`, scans the PR head, and posts/updates a PR comment with AI-likelihood score and top residue signals.
+- `.github/workflows/pr-ai-feedback.yml`: runs on reactions to that assessment comment.
+  - No reactions on the assessment comment are treated as likely-correct classification.
+  - `👎`/`😕` reactions are treated as misclassification feedback and trigger a guidance comment to retune parameters via the `eval/` workflow.
+  - `👍` reactions are treated as correct classification feedback.
+
+To use a different merge-target branch, edit `on.pull_request.branches` in `.github/workflows/pr-ai-assessment.yml`.
+
 ## Notes
 
 This remains heuristic and explainability-first. For production usage, calibrate thresholds against labeled examples to control false positives per repository type.

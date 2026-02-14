@@ -52,3 +52,14 @@ This prevents rule updates from degrading precision beyond the configured budget
 - **precision >= 0.9 at medium threshold** (`threshold_label: "medium"`)
 
 The eval command returns non-zero if launch gate fails.
+
+
+## 5) Incorporate PR reaction feedback
+
+When using the PR workflows, treat adjudication reactions as labels:
+
+- no reaction: keep classification as likely correct
+- `👍`: confirmed correct
+- `👎` or `😕`: likely incorrect, add that PR/repo sample to your labeled dataset and rerun eval
+
+Use this loop to adjust threshold/weights while preserving the precision regression budget.
