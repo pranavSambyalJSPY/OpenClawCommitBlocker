@@ -8,21 +8,18 @@ from pathlib import Path
 from .signals import Signal
 
 DEFAULT_WEIGHTS = {
-    "automation_marker": 0.4,
-    "templated_pr_style": 0.6,
+    "repo_unreadable_or_not_git": 1.0,
+    "message_agentic_phrases": 1.0,
+    "message_templated_structure": 0.7,
+    "commit_unusual_hours": 0.4,
+    "commit_burst_pattern": 0.7,
+    "author_generic_identity": 0.8,
+    "diff_todo_placeholders": 0.5,
 }
 
 
 def load_weights(config_path: str | Path | None = None) -> dict[str, float]:
-    """Load weights from a JSON config file.
-
-    Expected shape:
-    {
-      "weights": {
-        "signal_name": 0.5
-      }
-    }
-    """
+    """Load weights from a JSON config file."""
 
     if config_path is None:
         return DEFAULT_WEIGHTS.copy()
@@ -49,3 +46,14 @@ def score(signals: list[Signal], weights: dict[str, float] | None = None) -> flo
         return 0.0
 
     return max(0.0, min(1.0, weighted_sum / total_weight))
+
+
+def risk_band(final_score: float) -> str:
+    """Map normalized score to a human-friendly risk band."""
+
+    score_100 = final_score * 100
+    if score_100 >= 70:
+        return "high"
+    if score_100 >= 30:
+        return "medium"
+    return "low"
