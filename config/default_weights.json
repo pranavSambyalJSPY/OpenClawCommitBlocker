@@ -1,6 +1,11 @@
 {
   "weights": {
-    "automation_marker": 0.4,
-    "templated_pr_style": 0.6
+    "repo_unreadable_or_not_git": 1.0,
+    "message_agentic_phrases": 1.0,
+    "message_templated_structure": 0.7,
+    "commit_unusual_hours": 0.4,
+    "commit_burst_pattern": 0.7,
+    "author_generic_identity": 0.8,
+    "diff_todo_placeholders": 0.5
   }
 }
